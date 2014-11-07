@@ -5,19 +5,18 @@ namespace FDL\Parser;
 
 class MultiParameter
 {
-    private $parameters = [];
+    private $references = [];
 
     /**
      * @return array
      */
-    public function getParameters()
+    public function getReferences()
     {
-        return $this->parameters;
+        return $this->references;
     }
 
-    public function addEntity($parameter)
+    public function addReference(EntityReference $reference)
     {
-        $this->parameters[] = $parameter;
+        $this->references[] = $reference;
     }
 }
- 

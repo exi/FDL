@@ -26,10 +26,11 @@ class FDL
     public function run()
     {
         foreach ($this->parser->getDependencyOrder() as $entityType) {
-            $entityDefinition = $this->parser->getEntityDefinitionByType($entityType);
+            $entityDefinition = $this->parser->getEntityDefinitionByName($entityType);
             $entities = $this->parser->getEntitiesByName($entityDefinition->getEntityName());
             print_r($entities);
         }
+        print_r($this->parser->getReferences());
     }
 }
  
