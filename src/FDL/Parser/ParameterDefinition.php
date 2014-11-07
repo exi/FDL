@@ -5,6 +5,9 @@ namespace FDL\Parser;
 
 class ParameterDefinition
 {
+    const TYPE_CHAR = '.';
+    const PREFIX_CHAR = '<';
+    const DEFAULT_PREFIX = 'set';
     private $name;
     private $metaData;
 
@@ -38,7 +41,7 @@ class ParameterDefinition
     public function getEntityType()
     {
         foreach ($this->metaData as $data) {
-            if ('.' === substr($data, 0, 1)) {
+            if (self::TYPE_CHAR === substr($data, 0, 1)) {
                 return substr($data, 1);
             }
         }
@@ -50,5 +53,16 @@ class ParameterDefinition
     {
         return false !== array_search('!', $this->metaData);
     }
+
+    public function getPrefix()
+    {
+        $prefix = self::DEFAULT_PREFIX;
+        foreach ($this->metaData as $data) {
+            if (self::PREFIX_CHAR === substr($data, 0, 1)) {
+                $prefix = substr($data, 1);
+            }
+        }
+
+        return $prefix;
+    }
 }
- 

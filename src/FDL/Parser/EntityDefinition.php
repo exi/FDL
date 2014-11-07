@@ -19,7 +19,7 @@ class EntityDefinition
 
     public function addParameter(ParameterDefinition $parameterDefinition)
     {
-        $this->parameterDefinitions[$parameterDefinition->getName()] = $parameterDefinition;
+        $this->parameterDefinitions[] = $parameterDefinition;
         if (null !== $parameterDefinition->getEntityType()) {
             $this->dependantEntityDefinitions[] = $parameterDefinition->getEntityType();
             $this->dependantEntityDefinitions = array_unique($this->dependantEntityDefinitions);
@@ -48,6 +48,15 @@ class EntityDefinition
     public function getParameterDefinitions()
     {
         return $this->parameterDefinitions;
+    }
+
+    /**
+     * @param $idx
+     * @return ParameterDefinition
+     */
+    public function getParameterDefinitionForIdx($idx)
+    {
+        return $this->parameterDefinitions[$idx];
     }
 
     public function getParameterCount()

@@ -6,7 +6,7 @@ namespace FDL;
 use FDL\Parser\EmptyParameter;
 use FDL\Parser\Entity;
 use FDL\Parser\EntityDefinition;
-use FDL\Parser\EntityReference;
+use FDL\Parser\ReferenceParameter;
 use FDL\Parser\MultiParameter;
 use FDL\Parser\Parameter;
 use FDL\Parser\ParameterDefinition;
@@ -146,7 +146,7 @@ class Parser
     {
         $reference = $this->nextReference();
         $this->addReference($reference, $entity);
-        return new EntityReference($reference);
+        return new ReferenceParameter($reference);
     }
 
     private function indent()
@@ -282,6 +282,11 @@ class Parser
         $parts = $this->parts();
         $name = array_shift($parts);
 
+        if ('!' === $name) {
+            $parts[] = $name;
+            $name = null;
+        }
+
         return new ParameterDefinition($name, $parts);
     }
 
@@ -295,6 +300,7 @@ class Parser
                 if ($this->isMultiMarker()) {
                     $this->next();
                     $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
+                    $this->addEntity($subEntity);
                     $reference = $this->entityToReference($subEntity);
                     $entity->addParameter($reference);
                 } elseif ($this->isEmptyMarker()) {
@@ -321,7 +327,7 @@ class Parser
 
     private function parseEntityReference(ParameterDefinition $parameterDefinition)
     {
-        return new EntityReference(
+        return new ReferenceParameter(
             $this->toReference($parameterDefinition->getEntityType(), $this->lineValue())
         );
     }
@@ -379,6 +385,15 @@ class Parser
     private function toReference($entityName, $data = '')
     {
         return md5($entityName . $data);
+    }
+
+    /**
+     * @param $reference
+     * @return Entity
+     */
+    public function getEntityByReference($reference)
+    {
+        return $this->references[$reference];
     }
 }
  

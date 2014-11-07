@@ -15,7 +15,7 @@ class MultiParameter
         return $this->references;
     }
 
-    public function addReference(EntityReference $reference)
+    public function addReference(ReferenceParameter $reference)
     {
         $this->references[] = $reference;
     }

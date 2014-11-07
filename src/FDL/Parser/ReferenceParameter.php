@@ -3,7 +3,7 @@
 namespace FDL\Parser;
 
 
-class EntityReference
+class ReferenceParameter
 {
     private $reference;
 

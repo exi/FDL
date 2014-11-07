@@ -1,4 +1,4 @@
-.Address \MyDriver\ApplicationBundle\Entity\Address
+.Address \FDL\Entity\Address
     CompanyName
     Salutation
     FirstName
@@ -9,7 +9,7 @@
     City
     Country
 
-.User \MyDriver\ApplicationBundle\Entity\User
+.User \FDL\Entity\User
     Role <add
     Username
     Email !
@@ -20,7 +20,7 @@
     Enabled
 
 User
-    \MyDriver\ApplicationBundle\Entity\User::ROLE_SUPER_ADMIN
+    \FDL\Entity\User::ROLE_SUPER_ADMIN
     'admin@mydriver.com'
     'admin@mydriver.com'
     '(08689) 41086'
@@ -29,14 +29,13 @@ User
     'password'
     true
 
-.Customer \MyDriver\ApplicationBundle\Entity\Customer
+.Customer \FDL\Entity\Customer
     !
     User .User
     FirstName
     LastName
     ResidentAddress .Address
-    OwnedAddress .Address multi
-
+    OwnedAddress .Address multi <add
 
 Customer
     '2'

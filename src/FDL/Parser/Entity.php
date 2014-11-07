@@ -7,7 +7,9 @@ class Entity
 {
     private $entityName;
 
-    private $data = [];
+    private $parameters = [];
+
+    private $realEntity;
 
     function __construct($entityName)
     {
@@ -16,15 +18,15 @@ class Entity
 
     public function addParameter($parameter)
     {
-        $this->data[] = $parameter;
+        $this->parameters[] = $parameter;
     }
 
     /**
      * @return array
      */
-    public function getData()
+    public function getParameters()
     {
-        return $this->data;
+        return $this->parameters;
     }
 
     /**
@@ -33,6 +35,22 @@ class Entity
     public function getEntityName()
     {
         return $this->entityName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRealEntity()
+    {
+        return $this->realEntity;
+    }
+
+    /**
+     * @param mixed $realEntity
+     */
+    public function setRealEntity($realEntity)
+    {
+        $this->realEntity = $realEntity;
     }
 }
  
