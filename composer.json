@@ -1,0 +1,15 @@
+{
+    "name": "exi/fdl",
+    "description": "Fixture Description Language Library",
+    "authors": [
+        {
+            "name": "Reno Reckling",
+            "email": "reno.reckling@mayflower.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-0": { "": "src/" }
+    }
+}
