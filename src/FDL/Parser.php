@@ -16,8 +16,6 @@ class Parser
     const PARSER_PASS_DEFINITIONS = 1;
     const PARSER_PASS_ENTITIES = 2;
     private $dependencyOrder;
-    /** @var Entity[] */
-    private $entities = [];
     /** @var EntityDefinition[] */
     private $entityDefinitions = [];
     private $files;
@@ -26,6 +24,7 @@ class Parser
     private $parserPass;
     private $position = 0;
     private $referenceCounter = 0;
+    /** @var Entity[] */
     private $references = [];
 
     public function __construct($sourceFiles = [])
@@ -92,12 +91,12 @@ class Parser
      */
     public function getEntities()
     {
-        return $this->entities;
+        return array_values($this->references);
     }
 
     public function getEntitiesByName($name)
     {
-        return array_filter($this->entities, function (Entity $entity) use ($name) {
+        return array_filter($this->getEntities(), function (Entity $entity) use ($name) {
             return $entity->getEntityName() === $name;
         });
     }
@@ -127,11 +126,6 @@ class Parser
         return $this->references;
     }
 
-    private function addEntity(Entity $entity)
-    {
-        $this->entities[] = $entity;
-    }
-
     private function addEntityDefinition($entityName, $entityDefinition)
     {
         $this->entityDefinitions[$entityName] = $entityDefinition;
@@ -142,9 +136,15 @@ class Parser
         $this->references[$reference] = $entity;
     }
 
-    private function entityToReference($entity)
+    private function saveEntity(Entity $entity)
     {
-        $reference = $this->nextReference();
+        if (null === $entity->getReference()) {
+            $reference = $this->nextReference();
+            $entity->setReference($reference);
+        } else {
+            $reference = $entity->getReference();
+        }
+
         $this->addReference($reference, $entity);
         return new ReferenceParameter($reference);
     }
@@ -203,7 +203,7 @@ class Parser
 
     private function nextReference()
     {
-        return $this->toReference($this->referenceCounter++);
+        return $this->toReferenceName($this->referenceCounter++);
     }
 
     private function parseEntity($entityName = null)
@@ -259,8 +259,7 @@ class Parser
 
         while (!$this->isEOF() && $indent === $this->indent()) {
             $entity = $this->parseEntity($entityDefinition->getEntityName());
-            $reference = $this->entityToReference($entity);
-            $this->addEntity($entity);
+            $reference = $this->saveEntity($entity);
             $multiParameter->addReference($reference);
 
             $this->next();
@@ -300,8 +299,7 @@ class Parser
                 if ($this->isMultiMarker()) {
                     $this->next();
                     $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
-                    $this->addEntity($subEntity);
-                    $reference = $this->entityToReference($subEntity);
+                    $reference = $this->saveEntity($subEntity);
                     $entity->addParameter($reference);
                 } elseif ($this->isEmptyMarker()) {
                     $entity->addParameter(new EmptyParameter());
@@ -315,7 +313,7 @@ class Parser
                 $entity->addParameter($parameter);
 
                 if ($parameterDefinition->isReference()) {
-                    $this->addReference($this->toReference($entity->getEntityName(), $parameter->getData()), $entity);
+                    $entity->setReference($this->toReferenceName($entity->getEntityName(), $parameter->getData()));
                 }
 
                 $this->next();
@@ -328,7 +326,7 @@ class Parser
     private function parseEntityReference(ParameterDefinition $parameterDefinition)
     {
         return new ReferenceParameter(
-            $this->toReference($parameterDefinition->getEntityType(), $this->lineValue())
+            $this->toReferenceName($parameterDefinition->getEntityType(), $this->lineValue())
         );
     }
 
@@ -353,7 +351,7 @@ class Parser
             default:
                 if (self::PARSER_PASS_ENTITIES === $this->parserPass) {
                     $entity = $this->parseEntity();
-                    $this->addEntity($entity);
+                    $this->saveEntity($entity);
                 } else {
                     $this->skipBlock();
                 }
@@ -382,7 +380,7 @@ class Parser
         }
     }
 
-    private function toReference($entityName, $data = '')
+    private function toReferenceName($entityName, $data = '')
     {
         return md5($entityName . $data);
     }

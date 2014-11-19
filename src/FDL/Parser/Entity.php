@@ -11,6 +11,8 @@ class Entity
 
     private $realEntity;
 
+    private $reference;
+
     function __construct($entityName)
     {
         $this->entityName = $entityName;
@@ -52,5 +54,20 @@ class Entity
     {
         $this->realEntity = $realEntity;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    /**
+     * @param mixed $reference
+     */
+    public function setReference($reference)
+    {
+        $this->reference = $reference;
+    }
 }
- 
