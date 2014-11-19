@@ -208,9 +208,15 @@ class Parser
 
     private function parseEntity($entityName = null)
     {
+        $adHocReference = null;
         if (null === $entityName) {
             $parts = $this->parts();
             $entityName = $parts[0];
+
+            if (count($parts) > 1) {
+                array_shift($parts);
+                $adHocReference = implode(' ', $parts);
+            }
 
             $this->next();
         }
@@ -218,6 +224,10 @@ class Parser
         $entity = new Entity($entityName);
 
         $this->parseEntityParameters($entity);
+
+        if (null !== $adHocReference) {
+            $entity->setReference($this->toReferenceName($entityName, $adHocReference));
+        }
 
         return $entity;
     }
@@ -258,8 +268,14 @@ class Parser
         $entityDefinition = $this->getEntityDefinitionByName($parameterDefinition->getEntityType());
 
         while (!$this->isEOF() && $indent === $this->indent()) {
-            $entity = $this->parseEntity($entityDefinition->getEntityName());
-            $reference = $this->saveEntity($entity);
+            if ($this->isMultiMarker()) {
+                $this->next();
+                $entity = $this->parseEntity($entityDefinition->getEntityName());
+                $reference = $this->saveEntity($entity);
+            } else {
+                $reference = $this->parseEntityReference($parameterDefinition);
+                $this->next();
+            }
             $multiParameter->addReference($reference);
 
             $this->next();

@@ -7,6 +7,8 @@ class ComplicatedEntity
 {
     private $name;
 
+    private $basics = [];
+
     /**
      * @return mixed
      */
@@ -22,5 +24,17 @@ class ComplicatedEntity
     {
         $this->name = $name;
     }
+
+    /**
+     * @return array
+     */
+    public function getBasics()
+    {
+        return $this->basics;
+    }
+
+    public function superSetBasics(BasicEntity $basicEntity)
+    {
+        $this->basics[] = $basicEntity;
+    }
 }
- 

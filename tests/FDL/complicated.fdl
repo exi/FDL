@@ -1,0 +1,24 @@
+.Basic \FDL\BasicEntity
+    Name !
+
+.Compound \FDL\ComplicatedEntity
+    !
+    Name
+    Basic .Basic <superSet multi
+
+Basic my-basic ad-hoc
+    MyBasicEntity
+
+Basic
+    MySecondBasicEntity
+
+Compound
+    myReferenceName
+    myComplicatedEntity
+    :
+        my-basic ad-hoc
+        -
+        MySecondBasicEntity
+        -
+        :
+            ThirdBasicEntity

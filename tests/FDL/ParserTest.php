@@ -80,8 +80,36 @@ class ParserTest extends PHPUnit_Framework_TestCase
 
     }
 
+    public function testComplicatedEntityParsing()
+    {
+        $parser = $this->getComplicatedParser();
+
+        $entityDefinitions = $parser->getEntityDefinitions();
+        $this->assertCount(2, $entityDefinitions);
+        $this->assertArrayHasKey('Basic', $entityDefinitions);
+        $this->assertArrayHasKey('Compound', $entityDefinitions);
+
+        $entityDefinition = $entityDefinitions['Basic'];
+        $this->assertTrue($entityDefinition instanceof EntityDefinition);
+        $this->assertEquals('Basic', $entityDefinition->getEntityName());
+        $this->assertEquals('\FDL\BasicEntity', $entityDefinition->getClassName());
+
+        $entityDefinition = $entityDefinitions['Compound'];
+        $this->assertTrue($entityDefinition instanceof EntityDefinition);
+        $this->assertEquals('Compound', $entityDefinition->getEntityName());
+        $this->assertEquals('\FDL\ComplicatedEntity', $entityDefinition->getClassName());
+
+        $entities = $parser->getEntities();
+        $this->assertCount(4, $entities);
+    }
+
     private function getBasicParser()
     {
         return new Parser([__DIR__ . '/basic.fdl']);
+    }
+
+    private function getComplicatedParser()
+    {
+        return new Parser([__DIR__ . '/complicated.fdl']);
     }
 }
