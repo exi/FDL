@@ -193,7 +193,7 @@ class Parser
 
     private function lineValue()
     {
-        return trim($this->line());
+        return ltrim($this->line());
     }
 
     private function next()
