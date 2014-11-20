@@ -15,6 +15,7 @@ class Parser
 {
     const PARSER_PASS_DEFINITIONS = 1;
     const PARSER_PASS_ENTITIES = 2;
+    const DUMMY_ENTITY_NAME = '__DUMMY_ENTITY__';
     private $dependencyOrder;
     /** @var EntityDefinition[] */
     private $entityDefinitions = [];
@@ -203,7 +204,7 @@ class Parser
 
     private function nextReference()
     {
-        return $this->toReferenceName($this->referenceCounter++);
+        return $this->toReferenceName(self::DUMMY_ENTITY_NAME, $this->referenceCounter++);
     }
 
     private function parseEntity($entityName = null)
@@ -396,9 +397,17 @@ class Parser
         }
     }
 
-    private function toReferenceName($entityName, $data = '')
+    private function toReferenceName($entityName, $reference)
     {
-        return md5($entityName . $data);
+        if (null === $reference) {
+            throw new \Exception('entity reference cannot be null');
+        }
+
+        if ('' === $reference) {
+            throw new \Exception('entity reference cannot be ""');
+        }
+
+        return md5($entityName . $reference);
     }
 
     /**
