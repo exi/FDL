@@ -101,6 +101,27 @@ class ParserTest extends PHPUnit_Framework_TestCase
 
         $entities = $parser->getEntities();
         $this->assertCount(4, $entities);
+        $compound = null;
+        /** @var BasicEntity[] $basics */
+        $basics = [];
+        foreach ($entities as $entity) {
+            switch ($entity->getEntityName()) {
+                case 'Compound':
+                    $compound = $entity;
+                    break;
+                case 'Basic':
+                    $basics[$entity->getReference()] = $entity;
+                    break;
+            }
+        }
+
+        $this->assertNotNull($compound);
+        $this->assertCount(3, $basics);
+
+        $this->assertCount(3, $compound->getParameters());
+        $this->assertArrayHasKey(md5('Basicmy-basic ad-hoc'), $basics);
+        $this->assertArrayHasKey(md5('BasicMySecondBasicEntity'), $basics);
+        $this->assertArrayHasKey(md5('BasicThirdBasicEntity'), $basics);
     }
 
     private function getBasicParser()
