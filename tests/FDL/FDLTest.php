@@ -18,7 +18,7 @@ class FDLTest extends PHPUnit_Framework_TestCase
         $realEntity = $realEntities[0];
         $this->assertTrue($realEntity instanceof BasicEntity);
         /** @var BasicEntity $realEntity */
-        $this->assertEquals('myBasicEntity', $realEntity->getName());
+        $this->assertEquals('"myBasicEntity"', $realEntity->getName());
     }
 
     public function testDefaultEntityPersistence()

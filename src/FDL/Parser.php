@@ -267,15 +267,7 @@ class Parser
 
         while (!$this->isEOF() && $indent === $this->indent()) {
             if ($parameterDefinition->isTyped()) {
-                $entityDefinition = $this->getEntityDefinitionByName($parameterDefinition->getEntityType());
-                if ($this->isMultiMarker()) {
-                    $this->next();
-                    $entity = $this->parseEntity($entityDefinition->getEntityName());
-                    $parameter = $this->saveEntity($entity);
-                } else {
-                    $parameter = $this->parseEntityReference($parameterDefinition);
-                    $this->next();
-                }
+                $parameter = $this->parseTypedEntityParameter($parameterDefinition);
             } else {
                 $parameter = $this->lineValue();
                 $this->next();
@@ -309,6 +301,22 @@ class Parser
         return new ParameterDefinition($name, $parts);
     }
 
+    private function parseTypedEntityParameter(ParameterDefinition $parameterDefinition)
+    {
+        if ($this->isMultiMarker()) {
+            $this->next();
+            $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
+            $parameter = $this->saveEntity($subEntity);
+        } elseif ($this->isEmptyMarker()) {
+            $parameter = new EmptyParameter();
+            $this->next();
+        } else {
+            $parameter = $this->parseEntityReference($parameterDefinition);
+            $this->next();
+        }
+        return $parameter;
+    }
+
     private function parseEntityParameters(Entity $entity)
     {
         foreach ($this->getEntityDefinitionByName($entity->getEntityName())->getParameterDefinitions() as $parameterDefinition) {
@@ -316,18 +324,7 @@ class Parser
                 $multi = $this->parseEntityMultiParameter($parameterDefinition);
                 $entity->addParameter($multi);
             } elseif ($parameterDefinition->isTyped()) {
-                if ($this->isMultiMarker()) {
-                    $this->next();
-                    $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
-                    $reference = $this->saveEntity($subEntity);
-                    $entity->addParameter($reference);
-                } elseif ($this->isEmptyMarker()) {
-                    $entity->addParameter(new EmptyParameter());
-                    $this->next();
-                } else {
-                    $entity->addParameter($this->parseEntityReference($parameterDefinition));
-                    $this->next();
-                }
+                $entity->addParameter($this->parseTypedEntityParameter($parameterDefinition));
             } else {
                 if ($this->isEmptyMarker()) {
                     $parameter = new EmptyParameter();

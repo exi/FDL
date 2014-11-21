@@ -81,7 +81,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $parameter = $parameters[0];
         $this->assertTrue($parameter instanceof Parameter);
         /** @var Parameter $parameter */
-        $this->assertEquals('myBasicEntity', $parameter->getData());
+        $this->assertEquals('"myBasicEntity"', $parameter->getData());
 
     }
 
