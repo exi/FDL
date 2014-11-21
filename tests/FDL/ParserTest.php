@@ -32,7 +32,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $entityDefinition = $entityDefinitions['Test1'];
         $this->assertTrue($entityDefinition instanceof EntityDefinition);
         $this->assertEquals('Test1', $entityDefinition->getEntityName());
-        $this->assertEquals('\FDL\BasicEntity', $entityDefinition->getClassName());
+        $this->assertEquals(['\FDL\BasicEntity'], $entityDefinition->getMetaData());
 
         $entities = $parser->getEntities();
         $this->assertCount(1, $entities);
@@ -96,7 +96,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $entityDefinition = $entityDefinitions['Basic'];
         $this->assertTrue($entityDefinition instanceof EntityDefinition);
         $this->assertEquals('Basic', $entityDefinition->getEntityName());
-        $this->assertEquals('\FDL\BasicEntity', $entityDefinition->getClassName());
+        $this->assertEquals(['\FDL\BasicEntity'], $entityDefinition->getMetaData());
 
         $parameterDefinitions = $entityDefinition->getParameterDefinitions();
         $this->assertCount(1, $parameterDefinitions);
@@ -112,7 +112,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $entityDefinition = $entityDefinitions['Compound'];
         $this->assertTrue($entityDefinition instanceof EntityDefinition);
         $this->assertEquals('Compound', $entityDefinition->getEntityName());
-        $this->assertEquals('\FDL\ComplicatedEntity', $entityDefinition->getClassName());
+        $this->assertEquals(['\FDL\ComplicatedEntity'], $entityDefinition->getMetaData());
 
         $parameterDefinitions = $entityDefinition->getParameterDefinitions();
         $this->assertCount(3, $parameterDefinitions);

@@ -238,8 +238,9 @@ class Parser
     {
         $parts = $this->parts();
         $entityName = substr($parts[0], 1);
-        $className = $parts[1];
-        $entityDefinition = new EntityDefinition($entityName, $className);
+        array_shift($parts);
+        $metaData = $parts;
+        $entityDefinition = new EntityDefinition($entityName, $metaData);
 
         $this->next();
         $indent = $this->indent();

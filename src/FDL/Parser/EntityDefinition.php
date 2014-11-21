@@ -6,15 +6,15 @@ namespace FDL\Parser;
 class EntityDefinition
 {
     private $entityName;
-    private $className;
+    private $metaData;
     /** @var ParameterDefinition[] */
     private $parameterDefinitions = [];
     private $dependantEntityDefinitions = [];
 
-    public function __construct($entityName, $className)
+    public function __construct($entityName, Array $metaData = [])
     {
         $this->entityName = $entityName;
-        $this->className = $className;
+        $this->metaData = $metaData;
     }
 
     public function addParameter(ParameterDefinition $parameterDefinition)
@@ -29,9 +29,9 @@ class EntityDefinition
     /**
      * @return mixed
      */
-    public function getClassName()
+    public function getMetaData()
     {
-        return $this->className;
+        return $this->metaData;
     }
 
     /**

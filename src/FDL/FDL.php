@@ -17,22 +17,26 @@ class FDL
     private $constructFunctions = [];
     private $parser;
     private $persistFunctions = [];
-    private $realEntities = [];
+    private $persistedEntities = [];
 
     public function __construct(Array $sources = [])
     {
         $this->parser = new Parser($sources);
-        $this->setDefaultConstructFunction(function ($type) {
-            return new $type();
+        $this->setDefaultConstructFunction(function ($entityName, $metaData) {
+            if (1 !== count($metaData)) {
+                throw new \Exception('No class name specified for entity ' . $entityName);
+            }
+
+            return new $metaData[0]();
         });
-        $this->setDefaultPersistFunction(function ($type, $entity) {
-            $this->realEntities[] = $entity;
+        $this->setDefaultPersistFunction(function ($entityName, $metaData, $entity) {
+            $this->persistedEntities[] = $entity;
         });
     }
 
-    public function addConstructFunction($type, $constructFunction)
+    public function addConstructFunction($entityName, $constructFunction)
     {
-        $this->constructFunctions[$type] = $constructFunction;
+        $this->constructFunctions[$entityName] = $constructFunction;
     }
 
     public function setDefaultConstructFunction($constructFunction)
@@ -45,9 +49,9 @@ class FDL
         $this->persistFunctions[self::DEFAULT_PERSIST_FUNCTION_KEY] = $persistFunction;
     }
 
-    public function addPersistFunction($type, $persistFunction)
+    public function addPersistFunction($entityName, $persistFunction)
     {
-        $this->persistFunctions[$type] = $persistFunction;
+        $this->persistFunctions[$entityName] = $persistFunction;
     }
 
     public function run()
@@ -58,18 +62,22 @@ class FDL
             foreach ($entities as $entity) {
                 /** @var Entity $entity */
                 $realEntity = $this->constructRealEntity($entityDefinition, $entity);
-                $type = $entityDefinition->getClassName();
-                $persister = $this->getPersistFunction($type);
-                $persister($type, $realEntity);
+                $metaData = $entityDefinition->getMetaData();
+                $persister = $this->getPersistFunction($entityDefinition->getEntityName(), $metaData);
+                $persister($entityDefinition->getEntityName(), $metaData, $realEntity);
             }
         }
-        print_r($this->realEntities);
+
+        return array_map(function(Entity $entity) {
+            return $entity->getRealEntity();
+        }, $this->parser->getEntities());
     }
 
     private function constructRealEntity(EntityDefinition $entityDefinition, Entity $entity)
     {
-        $classType = $entityDefinition->getClassName();
-        $realEntity = $this->constructEntity($classType);
+        $entityName = $entityDefinition->getEntityName();
+        $metaData = $entityDefinition->getMetaData();
+        $realEntity = $this->constructEntity($entityName, $metaData);
         foreach ($entity->getParameters() as $idx => $parameter) {
             $parameterDefinition = $entityDefinition->getParameterDefinitionForIdx($idx);
             $this->handleParameter($parameterDefinition, $parameter, $realEntity);
@@ -109,10 +117,10 @@ class FDL
         $realEntity->{$parameterDefinition->getPrefix() . $parameterDefinition->getName()}($data);
     }
 
-    private function constructEntity($type)
+    private function constructEntity($entityName, $metaData)
     {
-        $constructor = $this->getConstructFunction($type);
-        return $constructor($type);
+        $constructor = $this->getConstructFunction($entityName);
+        return $constructor($entityName, $metaData);
     }
 
     private function getConstructFunction($type)
