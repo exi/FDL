@@ -32,7 +32,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $entityDefinition = $entityDefinitions['Test1'];
         $this->assertTrue($entityDefinition instanceof EntityDefinition);
         $this->assertEquals('Test1', $entityDefinition->getEntityName());
-        $this->assertEquals(['\FDL\BasicEntity'], $entityDefinition->getMetaData());
+        $this->assertEquals(['\FDL\BasicEntity', 'my', 'meta'], $entityDefinition->getMetaData());
 
         $entities = $parser->getEntities();
         $this->assertCount(1, $entities);

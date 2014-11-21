@@ -6,7 +6,7 @@ namespace FDL;
 class ComplicatedEntity
 {
     private $name;
-
+    private $persisted = false;
     private $basics = [];
 
     /**
@@ -26,15 +26,28 @@ class ComplicatedEntity
     }
 
     /**
-     * @return array
+     * @return BasicEntity[]
      */
     public function getBasics()
     {
         return $this->basics;
     }
 
-    public function superSetBasics(BasicEntity $basicEntity)
+    public function superSetBasic(BasicEntity $basicEntity)
     {
         $this->basics[] = $basicEntity;
+    }
+
+    public function persist()
+    {
+        $this->persisted = true;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isPersisted()
+    {
+        return $this->persisted;
     }
 }

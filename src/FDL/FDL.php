@@ -23,7 +23,7 @@ class FDL
     {
         $this->parser = new Parser($sources);
         $this->setDefaultConstructFunction(function ($entityName, $metaData) {
-            if (1 !== count($metaData)) {
+            if (count($metaData) < 1) {
                 throw new \Exception('No class name specified for entity ' . $entityName);
             }
 
