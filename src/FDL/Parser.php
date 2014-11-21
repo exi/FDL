@@ -10,6 +10,7 @@ use FDL\Parser\ReferenceParameter;
 use FDL\Parser\MultiParameter;
 use FDL\Parser\Parameter;
 use FDL\Parser\ParameterDefinition;
+use FDL\Parser\Util;
 
 class Parser
 {
@@ -139,11 +140,11 @@ class Parser
 
     private function saveEntity(Entity $entity)
     {
-        if (null === $entity->getReference()) {
+        if ($entity->hasReference()) {
+            $reference = $entity->getReference();
+        } else {
             $reference = $this->nextReference();
             $entity->setReference($reference);
-        } else {
-            $reference = $entity->getReference();
         }
 
         $this->addReference($reference, $entity);
@@ -204,7 +205,7 @@ class Parser
 
     private function nextReference()
     {
-        return $this->toReferenceName(self::DUMMY_ENTITY_NAME, $this->referenceCounter++);
+        return Util::toReferenceName(self::DUMMY_ENTITY_NAME, $this->referenceCounter++);
     }
 
     private function parseEntity($entityName = null)
@@ -227,7 +228,7 @@ class Parser
         $this->parseEntityParameters($entity);
 
         if (null !== $adHocReference) {
-            $entity->setReference($this->toReferenceName($entityName, $adHocReference));
+            $entity->setReference(Util::toReferenceName($entityName, $adHocReference));
         }
 
         return $entity;
@@ -312,7 +313,7 @@ class Parser
             if ($parameterDefinition->isMulti()) {
                 $multi = $this->parseEntityMultiParameter($parameterDefinition);
                 $entity->addParameter($multi);
-            } elseif (null !== $parameterDefinition->getEntityType()) {
+            } elseif ($parameterDefinition->isTyped()) {
                 if ($this->isMultiMarker()) {
                     $this->next();
                     $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
@@ -330,7 +331,7 @@ class Parser
                 $entity->addParameter($parameter);
 
                 if ($parameterDefinition->isReference()) {
-                    $entity->setReference($this->toReferenceName($entity->getEntityName(), $parameter->getData()));
+                    $entity->setReference(Util::toReferenceName($entity->getEntityName(), $parameter->getData()));
                 }
 
                 $this->next();
@@ -343,7 +344,7 @@ class Parser
     private function parseEntityReference(ParameterDefinition $parameterDefinition)
     {
         return new ReferenceParameter(
-            $this->toReferenceName($parameterDefinition->getEntityType(), $this->lineValue())
+            Util::toReferenceName($parameterDefinition->getEntityType(), $this->lineValue())
         );
     }
 
@@ -395,19 +396,6 @@ class Parser
         while (!$this->isEOF() && $this->indent() > $indent) {
             $this->next();
         }
-    }
-
-    private function toReferenceName($entityName, $reference)
-    {
-        if (null === $reference) {
-            throw new \Exception('entity reference cannot be null');
-        }
-
-        if ('' === $reference) {
-            throw new \Exception('entity reference cannot be ""');
-        }
-
-        return md5($entityName . $reference);
     }
 
     /**

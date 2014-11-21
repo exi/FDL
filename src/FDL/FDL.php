@@ -81,7 +81,7 @@ class FDL
 
     private function handleParameter(ParameterDefinition $parameterDefinition, $parameter, $realEntity)
     {
-        if (null === $parameterDefinition->getName()) {
+        if ($parameterDefinition->isAnonymous()) {
             return;
         }
 

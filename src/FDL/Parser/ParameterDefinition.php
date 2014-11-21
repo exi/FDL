@@ -18,14 +18,6 @@ class ParameterDefinition
     }
 
     /**
-     * @return array
-     */
-    public function getMetaData()
-    {
-        return $this->metaData;
-    }
-
-    /**
      * @return mixed
      */
     public function getName()
@@ -49,9 +41,19 @@ class ParameterDefinition
         return null;
     }
 
+    public function isTyped()
+    {
+        return null !== $this->getEntityType();
+    }
+
     public function isReference()
     {
         return false !== array_search('!', $this->metaData);
+    }
+
+    public function isAnonymous()
+    {
+        return null === $this->name;
     }
 
     public function getPrefix()

@@ -70,4 +70,9 @@ class Entity
     {
         $this->reference = $reference;
     }
+
+    public function hasReference()
+    {
+        return null !== $this->getReference();
+    }
 }

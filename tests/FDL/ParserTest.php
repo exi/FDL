@@ -3,9 +3,11 @@ namespace FDL;
 
 use FDL\Parser\Entity;
 use FDL\Parser\EntityDefinition;
+use FDL\Parser\MultiParameter;
 use FDL\Parser\Parameter;
 use FDL\Parser\ParameterDefinition;
 use FDL\Parser\ReferenceParameter;
+use FDL\Parser\Util;
 use PHPUnit_Framework_TestCase;
 
 class ParserTest extends PHPUnit_Framework_TestCase
@@ -64,8 +66,10 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($parameterDefinition instanceof ParameterDefinition);
         $this->assertEquals(null, $parameterDefinition->getEntityType());
         $this->assertEquals('Name', $parameterDefinition->getName());
-        $this->assertEquals([], $parameterDefinition->getMetaData());
         $this->assertEquals('set', $parameterDefinition->getPrefix());
+        $this->assertFalse($parameterDefinition->isMulti());
+        $this->assertFalse($parameterDefinition->isAnonymous());
+        $this->assertFalse($parameterDefinition->isReference());
 
         $entities = $parser->getEntities();
         $entity = $entities[0];
@@ -94,17 +98,56 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('Basic', $entityDefinition->getEntityName());
         $this->assertEquals('\FDL\BasicEntity', $entityDefinition->getClassName());
 
+        $parameterDefinitions = $entityDefinition->getParameterDefinitions();
+        $this->assertCount(1, $parameterDefinitions);
+        list($nameParameterDefinition) = $parameterDefinitions;
+        /** @var ParameterDefinition $nameParameterDefinition */
+        $this->assertEquals('Name', $nameParameterDefinition->getName());
+        $this->assertEquals('set', $nameParameterDefinition->getPrefix());
+        $this->assertEquals(null, $nameParameterDefinition->getEntityType());
+        $this->assertFalse($nameParameterDefinition->isMulti());
+        $this->assertFalse($nameParameterDefinition->isAnonymous());
+        $this->assertTrue($nameParameterDefinition->isReference());
+
         $entityDefinition = $entityDefinitions['Compound'];
         $this->assertTrue($entityDefinition instanceof EntityDefinition);
         $this->assertEquals('Compound', $entityDefinition->getEntityName());
         $this->assertEquals('\FDL\ComplicatedEntity', $entityDefinition->getClassName());
 
+        $parameterDefinitions = $entityDefinition->getParameterDefinitions();
+        $this->assertCount(3, $parameterDefinitions);
+        list($referenceParameterDefinition, $nameParameterDefinition, $basicParameterDefinition) = $parameterDefinitions;
+        /** @var ParameterDefinition $referenceParameterDefinition */
+        /** @var ParameterDefinition $nameParameterDefinition */
+        /** @var ParameterDefinition $basicParameterDefinition */
+        $this->assertEquals('set', $referenceParameterDefinition->getPrefix());
+        $this->assertFalse($referenceParameterDefinition->isTyped());
+        $this->assertFalse($referenceParameterDefinition->isMulti());
+        $this->assertTrue($referenceParameterDefinition->isAnonymous());
+        $this->assertTrue($referenceParameterDefinition->isReference());
+
+        $this->assertEquals('Name', $nameParameterDefinition->getName());
+        $this->assertEquals('set', $nameParameterDefinition->getPrefix());
+        $this->assertFalse($nameParameterDefinition->isTyped());
+        $this->assertFalse($nameParameterDefinition->isMulti());
+        $this->assertFalse($nameParameterDefinition->isAnonymous());
+        $this->assertFalse($nameParameterDefinition->isReference());
+
+        $this->assertEquals('Basic', $basicParameterDefinition->getEntityType());
+        $this->assertEquals('Basic', $basicParameterDefinition->getName());
+        $this->assertEquals('superSet', $basicParameterDefinition->getPrefix());
+        $this->assertTrue($basicParameterDefinition->isMulti());
+        $this->assertFalse($basicParameterDefinition->isAnonymous());
+        $this->assertFalse($basicParameterDefinition->isReference());
+        $this->assertTrue($basicParameterDefinition->isTyped());
+
         $entities = $parser->getEntities();
         $this->assertCount(4, $entities);
         $compound = null;
-        /** @var BasicEntity[] $basics */
+        /** @var Entity[] $basics */
         $basics = [];
         foreach ($entities as $entity) {
+            $this->assertTrue($entity instanceof Entity);
             switch ($entity->getEntityName()) {
                 case 'Compound':
                     $compound = $entity;
@@ -119,9 +162,63 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertCount(3, $basics);
 
         $this->assertCount(3, $compound->getParameters());
-        $this->assertArrayHasKey(md5('Basicmy-basic ad-hoc'), $basics);
-        $this->assertArrayHasKey(md5('BasicMySecondBasicEntity'), $basics);
-        $this->assertArrayHasKey(md5('BasicThirdBasicEntity'), $basics);
+
+        $adHocReference = Util::toReferenceName('Basic', 'my-basic ad-hoc');
+        $secondReference = Util::toReferenceName('Basic', 'MySecondBasicEntity');
+        $thirdReference = Util::toReferenceName('Basic', 'ThirdBasicEntity');
+
+        $this->assertArrayHasKey($adHocReference, $basics);
+        $this->assertArrayHasKey($secondReference, $basics);
+        $this->assertArrayHasKey($thirdReference, $basics);
+
+        /** @var Entity $entityAdHoc */
+        $entityAdHoc = $basics[$adHocReference];
+        /** @var Entity $entitySecond */
+        $entitySecond = $basics[$secondReference];
+        /** @var Entity $entityThird */
+        $entityThird = $basics[$thirdReference];
+
+        list($nameParameter) = $entityAdHoc->getParameters();
+        $this->assertTrue($nameParameter instanceof Parameter);
+        /** @var $nameParameter Parameter */
+        $this->assertEquals('MyBasicEntity', $nameParameter->getData());
+
+        list($nameParameter) = $entitySecond->getParameters();
+        $this->assertTrue($nameParameter instanceof Parameter);
+        /** @var $nameParameter Parameter */
+        $this->assertEquals('MySecondBasicEntity', $nameParameter->getData());
+
+        list($nameParameter) = $entityThird->getParameters();
+        $this->assertTrue($nameParameter instanceof Parameter);
+        /** @var $nameParameter Parameter */
+        $this->assertEquals('ThirdBasicEntity', $nameParameter->getData());
+
+        list($referenceParameter, $nameParameter, $multiBasicParameter) = $compound->getParameters();
+        $this->assertTrue($referenceParameter instanceof Parameter);
+        /** @var $referenceParameter Parameter */
+        $this->assertTrue($nameParameter instanceof Parameter);
+        /** @var $nameParameter Parameter */
+        $this->assertTrue($multiBasicParameter instanceof MultiParameter);
+        /** @var MultiParameter $multiBasicParameter */
+        $this->assertEquals('myReferenceName', $referenceParameter->getData());
+        $this->assertEquals('myComplicatedEntity', $nameParameter->getData());
+
+        $multiReferences = $multiBasicParameter->getReferences();
+        $this->assertCount(3, $multiReferences);
+        $multiEntities = array_map(function(ReferenceParameter $reference) use ($parser) {
+            $entity = $parser->getEntityByReference($reference->getReference());
+            $this->assertTrue($entity instanceof Entity);
+            return $entity;
+        }, $multiReferences);
+
+        $expectedBasicNames = ['MyBasicEntity', 'MySecondBasicEntity', 'ThirdBasicEntity'];
+        array_map(function(Entity $entity, $expectedName) {
+            $this->assertCount(1, $entity->getParameters());
+            /** @var Parameter $parameter */
+            $parameter = $entity->getParameters()[0];
+            $this->assertTrue($parameter instanceof Parameter);
+            $this->assertEquals($expectedName, $parameter->getData());
+        }, $multiEntities, $expectedBasicNames);
     }
 
     private function getBasicParser()
