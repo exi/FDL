@@ -1,0 +1,18 @@
+.Test1 \FDL\MultiBasicEntity
+    Name
+    Names multi
+
+Test1 not empty
+    myBasicEntity
+    :
+        my
+        -
+        name
+
+Test1 empty
+    myBasicEntity
+    ^
+
+Test1 really empty
+    ^
+    ^

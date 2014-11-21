@@ -103,11 +103,11 @@ class FDL
             self::applyOnRealObject($parameterDefinition, $realEntity, $otherEntity->getRealEntity());
         } elseif ($parameter instanceof MultiParameter) {
             /** @var MultiParameter $parameter */
-            foreach ($parameter->getReferences() as $reference) {
+            foreach ($parameter->getParameters() as $reference) {
                 $this->handleParameter($parameterDefinition, $reference, $realEntity);
             }
         } elseif ($parameter instanceOf EmptyParameter) {
-
+            /** Ignore it */
         } else {
             throw new \Exception('Unknown Parameter type: ' . $parameter);
         }

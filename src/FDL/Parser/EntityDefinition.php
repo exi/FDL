@@ -64,11 +64,6 @@ class EntityDefinition
         return count($this->parameterDefinitions);
     }
 
-    public function getDependentEntities()
-    {
-        return $this->dependantEntityDefinitions;
-    }
-
     public function dependsOn(EntityDefinition $entityDefinition)
     {
         return false !== array_search($entityDefinition->getEntityName(), $this->dependantEntityDefinitions);

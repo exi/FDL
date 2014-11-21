@@ -7,12 +7,12 @@ class Util
 {
     public static function toReferenceName($entityName, $reference)
     {
-        if (null === $reference) {
-            throw new \Exception('entity reference cannot be null');
+        if (!is_string($entityName) or '' === $entityName) {
+            throw new \InvalidArgumentException('entityName must be a non zero length string');
         }
 
-        if ('' === $reference) {
-            throw new \Exception('entity reference cannot be ""');
+        if (!is_string($reference) or '' === $reference) {
+            throw new \InvalidArgumentException('reference must be a non zero length string');
         }
 
         return md5($entityName . $reference);

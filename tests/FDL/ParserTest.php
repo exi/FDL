@@ -1,6 +1,7 @@
 <?php
 namespace FDL;
 
+use FDL\Parser\EmptyParameter;
 use FDL\Parser\Entity;
 use FDL\Parser\EntityDefinition;
 use FDL\Parser\MultiParameter;
@@ -203,7 +204,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('myReferenceName', $referenceParameter->getData());
         $this->assertEquals('myComplicatedEntity', $nameParameter->getData());
 
-        $multiReferences = $multiBasicParameter->getReferences();
+        $multiReferences = $multiBasicParameter->getParameters();
         $this->assertCount(3, $multiReferences);
         $multiEntities = array_map(function(ReferenceParameter $reference) use ($parser) {
             $entity = $parser->getEntityByReference($reference->getReference());
@@ -221,13 +222,50 @@ class ParserTest extends PHPUnit_Framework_TestCase
         }, $multiEntities, $expectedBasicNames);
     }
 
+    public function testEmptyParamParsing()
+    {
+        $parser = $this->getEmptyParamsParser();
+
+        $entityDefinitions = $parser->getEntityDefinitions();
+        $this->assertCount(1, $entityDefinitions);
+        $this->assertArrayHasKey('Test1', $entityDefinitions);
+
+        $entityDefinition = $entityDefinitions['Test1'];
+        $this->assertTrue($entityDefinition instanceof EntityDefinition);
+        $this->assertEquals('Test1', $entityDefinition->getEntityName());
+        $this->assertEquals(['\FDL\MultiBasicEntity'], $entityDefinition->getMetaData());
+
+        $entities = $parser->getEntities();
+        $this->assertCount(3, $entities);
+        $notEmptyEntity = $parser->getEntityByReference(Util::toReferenceName('Test1', 'not empty'));
+        $this->assertNotNull($notEmptyEntity);
+        $emptyEntity = $parser->getEntityByReference(Util::toReferenceName('Test1', 'empty'));
+        $this->assertNotNull($emptyEntity);
+        $reallyEmptyEntity = $parser->getEntityByReference(Util::toReferenceName('Test1', 'really empty'));
+        $this->assertNotNull($reallyEmptyEntity);
+
+        $this->assertCount(2, $notEmptyEntity->getParameters()[1]->getParameters());
+        $this->assertEmpty($emptyEntity->getParameters()[1]->getParameters());
+        $this->assertEmpty($reallyEmptyEntity->getParameters()[1]->getParameters());
+        $this->assertTrue($emptyEntity->getParameters()[0] instanceof Parameter);
+        $this->assertTrue($emptyEntity->getParameters()[1] instanceof MultiParameter);
+        $this->assertTrue($notEmptyEntity->getParameters()[0] instanceof Parameter);
+        $this->assertTrue($notEmptyEntity->getParameters()[1] instanceof MultiParameter);
+        $this->assertTrue($reallyEmptyEntity->getParameters()[0] instanceof EmptyParameter);
+        $this->assertTrue($reallyEmptyEntity->getParameters()[1] instanceof MultiParameter);
+    }
     private function getBasicParser()
     {
-        return new Parser([__DIR__ . '/basic.fdl']);
+        return new Parser([__DIR__ . '/fdls/basic.fdl']);
     }
 
     private function getComplicatedParser()
     {
-        return new Parser([__DIR__ . '/complicated.fdl']);
+        return new Parser([__DIR__ . '/fdls/complicated.fdl']);
+    }
+
+    private function getEmptyParamsParser()
+    {
+        return new Parser([__DIR__ . '/fdls/emptyParams.fdl']);
     }
 }

@@ -134,17 +134,17 @@ class FDLTest extends PHPUnit_Framework_TestCase
 
     private function getBasicFDL()
     {
-        return new FDL([__DIR__ . '/basic.fdl']);
+        return new FDL([__DIR__ . '/fdls/basic.fdl']);
     }
 
     private function getBasicSpecificConstFDL()
     {
-        return new FDL([__DIR__ . '/basicSpecificConst.fdl']);
+        return new FDL([__DIR__ . '/fdls/basicSpecificConst.fdl']);
     }
 
     private function getComplicatedFDL()
     {
-        return new FDL([__DIR__ . '/complicated.fdl']);
+        return new FDL([__DIR__ . '/fdls/complicated.fdl']);
     }
 }
  

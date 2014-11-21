@@ -156,10 +156,6 @@ class Parser
         $matches = null;
         preg_match('/^\s*/', $this->line(), $matches);
 
-        if (!is_array($matches) || 0 === count($matches)) {
-            return 0;
-        }
-
         return mb_strlen($matches[0]);
     }
 
@@ -205,7 +201,7 @@ class Parser
 
     private function nextReference()
     {
-        return Util::toReferenceName(self::DUMMY_ENTITY_NAME, $this->referenceCounter++);
+        return Util::toReferenceName(self::DUMMY_ENTITY_NAME, (string)$this->referenceCounter++);
     }
 
     private function parseEntity($entityName = null)
@@ -268,18 +264,23 @@ class Parser
 
         $this->next();
         $indent = $this->indent();
-        $entityDefinition = $this->getEntityDefinitionByName($parameterDefinition->getEntityType());
 
         while (!$this->isEOF() && $indent === $this->indent()) {
-            if ($this->isMultiMarker()) {
-                $this->next();
-                $entity = $this->parseEntity($entityDefinition->getEntityName());
-                $reference = $this->saveEntity($entity);
+            if ($parameterDefinition->isTyped()) {
+                $entityDefinition = $this->getEntityDefinitionByName($parameterDefinition->getEntityType());
+                if ($this->isMultiMarker()) {
+                    $this->next();
+                    $entity = $this->parseEntity($entityDefinition->getEntityName());
+                    $parameter = $this->saveEntity($entity);
+                } else {
+                    $parameter = $this->parseEntityReference($parameterDefinition);
+                    $this->next();
+                }
             } else {
-                $reference = $this->parseEntityReference($parameterDefinition);
+                $parameter = $this->lineValue();
                 $this->next();
             }
-            $multiParameter->addReference($reference);
+            $multiParameter->addParameter($parameter);
 
             $this->next();
             if ($this->isEOF() || !$this->isContinueMarker()) {
@@ -328,7 +329,11 @@ class Parser
                     $this->next();
                 }
             } else {
-                $parameter = $this->parseEntityParameter();
+                if ($this->isEmptyMarker()) {
+                    $parameter = new EmptyParameter();
+                } else {
+                    $parameter = $this->parseEntityParameter();
+                }
                 $entity->addParameter($parameter);
 
                 if ($parameterDefinition->isReference()) {
