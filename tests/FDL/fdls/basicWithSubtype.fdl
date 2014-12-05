@@ -1,0 +1,9 @@
+.Test1 \FDL\SubtypeBasicEntity
+    SubBasic .Test2
+
+.Test2 \FDL\SubtypeBasicEntity
+    Name
+
+Test1
+    : child reference
+        'I am a child entity'

@@ -204,16 +204,18 @@ class Parser
         return Util::toReferenceName(self::DUMMY_ENTITY_NAME, (string)$this->referenceCounter++);
     }
 
-    private function parseEntity($entityName = null)
+    private function parseEntity($entityName = null, $adHocReference = null)
     {
-        $adHocReference = null;
         if (null === $entityName) {
-            $parts = $this->parts();
-            $entityName = $parts[0];
+            $line = $this->lineValue();
+            $matchResult = preg_match('/^([^ ]+)( (.*)$)?/', $line, $matches);
+            if (0 === $matchResult or false === $matchResult) {
+                throw new \Exception('Missing entity type');
+            }
+            $entityName = $matches[1];
 
-            if (count($parts) > 1) {
-                array_shift($parts);
-                $adHocReference = implode(' ', $parts);
+            if (4 === count($matches)) {
+                $adHocReference = $matches[3];
             }
 
             $this->next();
@@ -304,8 +306,15 @@ class Parser
     private function parseTypedEntityParameter(ParameterDefinition $parameterDefinition)
     {
         if ($this->isMultiMarker()) {
+            $line = $this->lineValue();
+
+            $adHocReference = null;
+            if (mb_strlen($line) > 2) {
+                $adHocReference = substr($line, 2);
+            }
+
             $this->next();
-            $subEntity = $this->parseEntity($parameterDefinition->getEntityType());
+            $subEntity = $this->parseEntity($parameterDefinition->getEntityType(), $adHocReference);
             $parameter = $this->saveEntity($subEntity);
         } elseif ($this->isEmptyMarker()) {
             $parameter = new EmptyParameter();

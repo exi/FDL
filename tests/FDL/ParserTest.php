@@ -254,6 +254,67 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($reallyEmptyEntity->getParameters()[0] instanceof EmptyParameter);
         $this->assertTrue($reallyEmptyEntity->getParameters()[1] instanceof MultiParameter);
     }
+
+    public function testChildLabel()
+    {
+        $parser = $this->getBasicWithSubtypeFDL();
+        $entityDefinitions = $parser->getEntityDefinitions();
+        $this->assertCount(2, $entityDefinitions);
+        $this->assertArrayHasKey('Test1', $entityDefinitions);
+        $this->assertArrayHasKey('Test2', $entityDefinitions);
+
+        $entities = $parser->getEntities();
+        $this->assertCount(2, $entities);
+
+        $test1Entity = null;
+        $test2Entity = null;
+        foreach ($entities as $entity) {
+            $this->assertTrue($entity instanceof Entity);
+            if ('Test1' === $entity->getEntityName()) {
+                $test1Entity = $entity;
+            } elseif ('Test2' === $entity->getEntityName()) {
+                $test2Entity = $entity;
+            } else {
+                $this->fail('Wrong entity type');
+            }
+        }
+
+        $this->assertNotNull($test1Entity);
+        $this->assertNotNull($test2Entity);
+
+        $references = $parser->getReferences();
+        $this->assertCount(2, $references);
+        $expectedReference = Util::toReferenceName('Test2', 'child reference');
+        $this->assertArrayHasKey($expectedReference, $references);
+
+        $referenceTest1 = null;
+        $referenceTest2 = null;
+        foreach ($references as $reference => $entity) {
+            if ($reference === $expectedReference) {
+                $referenceTest2 = $entity;
+            } else {
+                $referenceTest1 = $entity;
+            }
+        }
+
+        $this->assertNotNull($referenceTest1);
+        $this->assertNotNull($referenceTest2);
+        $this->assertTrue($referenceTest1 instanceof Entity);
+        $this->assertTrue($referenceTest2 instanceof Entity);
+
+        $parameters = $referenceTest1->getParameters();
+        $this->assertCount(1, $parameters);
+        $parameter = $parameters[0];
+        $this->assertTrue($parameter instanceof ReferenceParameter);
+        /* @var ReferenceParameter $parameter */
+        $this->assertEquals($expectedReference, $parameter->getReference());
+    }
+
+    private function getBasicWithSubtypeFDL()
+    {
+        return new Parser([__DIR__ . '/fdls/basicWithSubtype.fdl']);
+    }
+
     private function getBasicParser()
     {
         return new Parser([__DIR__ . '/fdls/basic.fdl']);

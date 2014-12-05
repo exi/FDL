@@ -17,7 +17,6 @@ class FDL
     private $constructFunctions = [];
     private $parser;
     private $persistFunctions = [];
-    private $persistedEntities = [];
 
     public function __construct(Array $sources = [])
     {
@@ -29,9 +28,7 @@ class FDL
 
             return new $metaData[0]();
         });
-        $this->setDefaultPersistFunction(function ($entityName, $metaData, $entity) {
-            $this->persistedEntities[] = $entity;
-        });
+        $this->setDefaultPersistFunction(function ($entityName, $metaData, $entity) { });
     }
 
     public function addConstructFunction($entityName, $constructFunction)
