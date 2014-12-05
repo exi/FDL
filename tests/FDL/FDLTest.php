@@ -18,7 +18,19 @@ class FDLTest extends PHPUnit_Framework_TestCase
         $realEntity = $realEntities[0];
         $this->assertTrue($realEntity instanceof BasicEntity);
         /** @var BasicEntity $realEntity */
-        $this->assertEquals('"myBasicEntity"', $realEntity->getName());
+        $this->assertEquals('myBasicEntity', $realEntity->getName());
+    }
+
+    public function testBasicConstantsEntityConstruction()
+    {
+        $fdl = $this->getBasicConstantsFDL();
+        $realEntities = $fdl->run();
+
+        $this->assertCount(1, $realEntities);
+        $realEntity = $realEntities[0];
+        $this->assertTrue($realEntity instanceof BasicEntity);
+        /** @var BasicEntity $realEntity */
+        $this->assertEquals('my constant', $realEntity->getName());
     }
 
     public function testDefaultEntityPersistence()
@@ -135,6 +147,11 @@ class FDLTest extends PHPUnit_Framework_TestCase
     private function getBasicFDL()
     {
         return new FDL([__DIR__ . '/fdls/basic.fdl']);
+    }
+
+    private function getBasicConstantsFDL()
+    {
+        return new FDL([__DIR__ . '/fdls/basicConstants.fdl']);
     }
 
     private function getBasicSpecificConstFDL()

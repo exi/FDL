@@ -111,7 +111,11 @@ class FDL
     }
 
     private static function applyOnRealObject(ParameterDefinition $parameterDefinition, $realEntity, $data) {
-        $realEntity->{$parameterDefinition->getPrefix() . $parameterDefinition->getName()}($data);
+        $realData = $data;
+        if (is_string($data)) {
+            eval('$realData = ' . $data . ';');
+        }
+        $realEntity->{$parameterDefinition->getPrefix() . $parameterDefinition->getName()}($realData);
     }
 
     private function constructEntity($entityName, $metaData)

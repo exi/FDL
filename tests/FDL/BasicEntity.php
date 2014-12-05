@@ -5,6 +5,7 @@ namespace FDL;
 
 class BasicEntity
 {
+    const MY_CONST = 'my constant';
     private $name;
     private $persisted = false;
     private $constructName = null;

@@ -3,14 +3,14 @@
     Names multi
 
 Test1 not empty
-    myBasicEntity
+    "myBasicEntity"
     :
         my
         -
         name
 
 Test1 empty
-    myBasicEntity
+    "myBasicEntity"
     ^
 
 Test1 really empty

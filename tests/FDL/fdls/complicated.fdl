@@ -7,18 +7,18 @@
     Basic .Basic <superSet multi
 
 Basic my-basic ad-hoc
-    MyBasicEntity
+    "MyBasicEntity"
 
 Basic
-    MySecondBasicEntity
+    "MySecondBasicEntity"
 
 Compound
-    myReferenceName
-    myComplicatedEntity
+    "myReferenceName"
+    'myComplicatedEntity'
     :
         my-basic ad-hoc
         -
-        MySecondBasicEntity
+        "MySecondBasicEntity"
         -
         :
-            ThirdBasicEntity
+            'ThirdBasicEntity'
