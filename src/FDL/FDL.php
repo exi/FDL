@@ -14,9 +14,11 @@ class FDL
 {
     const DEFAULT_PERSIST_FUNCTION_KEY = '__default__';
     const DEFAULT_CONSTRUCT_FUNCTION_KEY = '__default__';
+    const DEFAULT_PARAMETER_FUNCTION_KEY = '__default__';
     private $constructFunctions = [];
     private $parser;
     private $persistFunctions = [];
+    private $parameterFunctions = [];
 
     public function __construct(Array $sources = [])
     {
@@ -29,6 +31,19 @@ class FDL
             return new $metaData[0]();
         });
         $this->setDefaultPersistFunction(function ($entityName, $metaData, $entity) { });
+        $this->setDefaultParameterFunction(function (
+            EntityDefinition $entityDefinition,
+            ParameterDefinition $parameterDefinition,
+            $realEntity,
+            $data
+        ) {
+            $this->defaultParameterFunction(
+                $entityDefinition,
+                $parameterDefinition,
+                $realEntity,
+                $data
+            );
+        });
     }
 
     public function addConstructFunction($entityName, $constructFunction)
@@ -39,6 +54,16 @@ class FDL
     public function setDefaultConstructFunction($constructFunction)
     {
         $this->constructFunctions[self::DEFAULT_CONSTRUCT_FUNCTION_KEY] = $constructFunction;
+    }
+
+    public function addParameterFunction($entityName, $parameterName, $parameterFunction)
+    {
+        $this->parameterFunctions[$entityName][$parameterName] = $parameterFunction;
+    }
+
+    public function setDefaultParameterFunction($parameterFunction)
+    {
+        $this->parameterFunctions[self::DEFAULT_PARAMETER_FUNCTION_KEY] = $parameterFunction;
     }
 
     public function setDefaultPersistFunction($persistFunction)
@@ -77,31 +102,35 @@ class FDL
         $realEntity = $this->constructEntity($entityName, $metaData);
         foreach ($entity->getParameters() as $idx => $parameter) {
             $parameterDefinition = $entityDefinition->getParameterDefinitionForIdx($idx);
-            $this->handleParameter($parameterDefinition, $parameter, $realEntity);
+            $this->handleParameter($entityDefinition, $parameterDefinition, $parameter, $realEntity);
         }
         $entity->setRealEntity($realEntity);
 
         return $realEntity;
     }
 
-    private function handleParameter(ParameterDefinition $parameterDefinition, $parameter, $realEntity)
-    {
+    private function handleParameter(
+        EntityDefinition $entityDefinition,
+        ParameterDefinition $parameterDefinition,
+        $parameter,
+        $realEntity
+    ) {
         if ($parameterDefinition->isAnonymous()) {
             return;
         }
 
         if ($parameter instanceof Parameter) {
             /** @var Parameter $parameter */
-            self::applyOnRealObject($parameterDefinition, $realEntity, $parameter->getData());
+            $this->applyOnRealObject($entityDefinition, $parameterDefinition, $realEntity, $parameter->getData());
         } elseif ($parameter instanceof ReferenceParameter) {
             /** @var ReferenceParameter $parameter */
             /** @var Entity $otherEntity */
             $otherEntity = $this->parser->getEntityByReference($parameter->getReference());
-            self::applyOnRealObject($parameterDefinition, $realEntity, $otherEntity->getRealEntity());
+            $this->applyOnRealObject($entityDefinition, $parameterDefinition, $realEntity, $otherEntity->getRealEntity());
         } elseif ($parameter instanceof MultiParameter) {
             /** @var MultiParameter $parameter */
             foreach ($parameter->getParameters() as $reference) {
-                $this->handleParameter($parameterDefinition, $reference, $realEntity);
+                $this->handleParameter($entityDefinition, $parameterDefinition, $reference, $realEntity);
             }
         } elseif ($parameter instanceOf EmptyParameter) {
             /** Ignore it */
@@ -110,7 +139,40 @@ class FDL
         }
     }
 
-    private static function applyOnRealObject(ParameterDefinition $parameterDefinition, $realEntity, $data) {
+    private function applyOnRealObject(
+        EntityDefinition $entityDefinition,
+        ParameterDefinition $parameterDefinition,
+        $realEntity,
+        $data
+    ) {
+        $entityName = $entityDefinition->getEntityName();
+        $parameterName = $parameterDefinition->getName();
+        if (
+            array_key_exists($entityName, $this->parameterFunctions) &&
+            array_key_exists($parameterName, $this->parameterFunctions[$entityName])
+        ) {
+            $this->parameterFunctions[$entityName][$parameterName](
+                $entityDefinition,
+                $parameterDefinition,
+                $realEntity,
+                $data
+            );
+        } else {
+            $this->parameterFunctions[self::DEFAULT_PARAMETER_FUNCTION_KEY](
+                $entityDefinition,
+                $parameterDefinition,
+                $realEntity,
+                $data
+            );
+        }
+    }
+
+    private function defaultParameterFunction(
+        EntityDefinition $entityDefinition,
+        ParameterDefinition $parameterDefinition,
+        $realEntity,
+        $data
+    ) {
         $realData = $data;
         if (is_string($data)) {
             eval('$realData = ' . $data . ';');

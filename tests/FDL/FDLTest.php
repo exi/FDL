@@ -4,6 +4,8 @@ namespace FDL;
 
 require_once __DIR__ . '/BasicEntity.php';
 require_once __DIR__ . '/ComplicatedEntity.php';
+use FDL\Parser\EntityDefinition;
+use FDL\Parser\ParameterDefinition;
 use PHPUnit_Framework_TestCase;
 
 class FDLTest extends PHPUnit_Framework_TestCase
@@ -19,6 +21,30 @@ class FDLTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($realEntity instanceof BasicEntity);
         /** @var BasicEntity $realEntity */
         $this->assertEquals('myBasicEntity', $realEntity->getName());
+    }
+
+    public function testBasicEntityCustomParameter()
+    {
+        $fdl = $this->getBasicFDL();
+        $fdl->addParameterFunction(
+            'Test1',
+            'Name',
+            function (
+                EntityDefinition $entityDefinition,
+                ParameterDefinition $parameterDefinition,
+                BasicEntity $realEntity,
+                $data
+            ) {
+                $realEntity->setName('intercepted');
+            }
+        );
+        $realEntities = $fdl->run();
+
+        $this->assertCount(1, $realEntities);
+        $realEntity = $realEntities[0];
+        $this->assertTrue($realEntity instanceof BasicEntity);
+        /** @var BasicEntity $realEntity */
+        $this->assertEquals('intercepted', $realEntity->getName());
     }
 
     public function testBasicConstantsEntityConstruction()

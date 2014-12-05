@@ -165,8 +165,8 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertCount(3, $compound->getParameters());
 
         $adHocReference = Util::toReferenceName('Basic', 'my-basic ad-hoc');
-        $secondReference = Util::toReferenceName('Basic', 'MySecondBasicEntity');
-        $thirdReference = Util::toReferenceName('Basic', 'ThirdBasicEntity');
+        $secondReference = Util::toReferenceName('Basic', '"MySecondBasicEntity"');
+        $thirdReference = Util::toReferenceName('Basic', "'ThirdBasicEntity'");
 
         $this->assertArrayHasKey($adHocReference, $basics);
         $this->assertArrayHasKey($secondReference, $basics);
@@ -182,17 +182,17 @@ class ParserTest extends PHPUnit_Framework_TestCase
         list($nameParameter) = $entityAdHoc->getParameters();
         $this->assertTrue($nameParameter instanceof Parameter);
         /** @var $nameParameter Parameter */
-        $this->assertEquals('MyBasicEntity', $nameParameter->getData());
+        $this->assertEquals('"MyBasicEntity"', $nameParameter->getData());
 
         list($nameParameter) = $entitySecond->getParameters();
         $this->assertTrue($nameParameter instanceof Parameter);
         /** @var $nameParameter Parameter */
-        $this->assertEquals('MySecondBasicEntity', $nameParameter->getData());
+        $this->assertEquals('"MySecondBasicEntity"', $nameParameter->getData());
 
         list($nameParameter) = $entityThird->getParameters();
         $this->assertTrue($nameParameter instanceof Parameter);
         /** @var $nameParameter Parameter */
-        $this->assertEquals('ThirdBasicEntity', $nameParameter->getData());
+        $this->assertEquals("'ThirdBasicEntity'", $nameParameter->getData());
 
         list($referenceParameter, $nameParameter, $multiBasicParameter) = $compound->getParameters();
         $this->assertTrue($referenceParameter instanceof Parameter);
@@ -201,8 +201,8 @@ class ParserTest extends PHPUnit_Framework_TestCase
         /** @var $nameParameter Parameter */
         $this->assertTrue($multiBasicParameter instanceof MultiParameter);
         /** @var MultiParameter $multiBasicParameter */
-        $this->assertEquals('myReferenceName', $referenceParameter->getData());
-        $this->assertEquals('myComplicatedEntity', $nameParameter->getData());
+        $this->assertEquals('"myReferenceName"', $referenceParameter->getData());
+        $this->assertEquals("'myComplicatedEntity'", $nameParameter->getData());
 
         $multiReferences = $multiBasicParameter->getParameters();
         $this->assertCount(3, $multiReferences);
@@ -212,7 +212,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
             return $entity;
         }, $multiReferences);
 
-        $expectedBasicNames = ['MyBasicEntity', 'MySecondBasicEntity', 'ThirdBasicEntity'];
+        $expectedBasicNames = ['"MyBasicEntity"', '"MySecondBasicEntity"', "'ThirdBasicEntity'"];
         array_map(function(Entity $entity, $expectedName) {
             $this->assertCount(1, $entity->getParameters());
             /** @var Parameter $parameter */
