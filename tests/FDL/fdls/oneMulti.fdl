@@ -1,0 +1,15 @@
+.Test1
+    Name !
+
+.Test2
+    Test .Test1 multi
+
+Test1
+    'foo'
+
+Test2
+    :
+        'foo'
+Test2
+    :
+        'foo'

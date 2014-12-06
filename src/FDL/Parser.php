@@ -168,7 +168,7 @@ class Parser
         if (empty($parts)) {
             return false;
         } else {
-            return '-' !== $parts[0];
+            return '-' === $parts[0];
         }
     }
 
@@ -284,9 +284,10 @@ class Parser
             }
             $multiParameter->addParameter($parameter);
 
-            $this->next();
             if ($this->isEOF() || !$this->isContinueMarker()) {
                 break;
+            } elseif ($this->isContinueMarker()) {
+                $this->next();
             }
         }
 

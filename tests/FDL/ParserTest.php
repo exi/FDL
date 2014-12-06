@@ -317,6 +317,13 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertCount(2, $definitions);
     }
 
+    public function testOneMulti()
+    {
+        $parser = $this->getOneMultiParser();
+        $definitions = $parser->getEntityDefinitions();
+        $this->assertCount(2, $definitions);
+    }
+
     private function getBasicWithSubtypeParser()
     {
         return new Parser([__DIR__ . '/fdls/basicWithSubtype.fdl']);
@@ -340,5 +347,10 @@ class ParserTest extends PHPUnit_Framework_TestCase
     private function getEmptyParamsParser()
     {
         return new Parser([__DIR__ . '/fdls/emptyParams.fdl']);
+    }
+
+    private function getOneMultiParser()
+    {
+        return new Parser([__DIR__ . '/fdls/oneMulti.fdl']);
     }
 }
