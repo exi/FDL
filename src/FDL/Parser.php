@@ -269,7 +269,7 @@ class Parser
         }
 
         if (!$this->isMultiMarker()) {
-            $this->throwException('No multi definition found');
+            $this->throwException('Multi definition expected');
         }
 
         $this->next();
@@ -284,7 +284,9 @@ class Parser
             }
             $multiParameter->addParameter($parameter);
 
-            if ($this->isEOF() || !$this->isContinueMarker()) {
+            if ($this->indent() === $indent && !$this->isContinueMarker()) {
+                $this->throwException('Continue Marker expected');
+            } elseif ($this->isEOF() || !$this->isContinueMarker()) {
                 break;
             } elseif ($this->isContinueMarker()) {
                 $this->next();
