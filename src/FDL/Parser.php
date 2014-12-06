@@ -234,6 +234,7 @@ class Parser
 
     private function parseEntityDefinition()
     {
+        $indent = $this->indent();
         $parts = $this->parts();
         $entityName = substr($parts[0], 1);
         array_shift($parts);
@@ -241,8 +242,7 @@ class Parser
         $entityDefinition = new EntityDefinition($entityName, $metaData);
 
         $this->next();
-        $indent = $this->indent();
-        while (!$this->isEOF() && $indent === $this->indent()) {
+        while (!$this->isEOF() && $indent < $this->indent()) {
             $entityDefinition->addParameter($this->parseEntityParameterDefinition());
             $this->next();
         }

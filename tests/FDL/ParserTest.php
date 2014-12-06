@@ -257,7 +257,7 @@ class ParserTest extends PHPUnit_Framework_TestCase
 
     public function testChildLabel()
     {
-        $parser = $this->getBasicWithSubtypeFDL();
+        $parser = $this->getBasicWithSubtypeParser();
         $entityDefinitions = $parser->getEntityDefinitions();
         $this->assertCount(2, $entityDefinitions);
         $this->assertArrayHasKey('Test1', $entityDefinitions);
@@ -310,7 +310,14 @@ class ParserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expectedReference, $parameter->getReference());
     }
 
-    private function getBasicWithSubtypeFDL()
+    public function testEmptyType()
+    {
+        $parser = $this->getEmptyNonEmptyParser();
+        $definitions = $parser->getEntityDefinitions();
+        $this->assertCount(2, $definitions);
+    }
+
+    private function getBasicWithSubtypeParser()
     {
         return new Parser([__DIR__ . '/fdls/basicWithSubtype.fdl']);
     }
@@ -318,6 +325,11 @@ class ParserTest extends PHPUnit_Framework_TestCase
     private function getBasicParser()
     {
         return new Parser([__DIR__ . '/fdls/basic.fdl']);
+    }
+
+    private function getEmptyNonEmptyParser()
+    {
+        return new Parser([__DIR__ . '/fdls/emptyNonEmpty.fdl']);
     }
 
     private function getComplicatedParser()
