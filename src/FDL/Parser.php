@@ -161,7 +161,12 @@ class Parser
 
     private function isContinueMarker()
     {
-        return '-' !== $this->parts()[0];
+        $parts = $this->parts();
+        if (empty($parts)) {
+            return false;
+        } else {
+            return '-' !== $parts[0];
+        }
     }
 
     private function isEOF()
