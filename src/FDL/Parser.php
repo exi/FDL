@@ -65,22 +65,46 @@ class Parser
             }
         }
 
-        $entityDefinitions = array_values($this->getEntityDefinitions());
-        usort($entityDefinitions, function ($e1, $e2) {
-            /** @var EntityDefinition $e1 */
-            /** @var EntityDefinition $e2 */
-            if ($e1->dependsOn($e2)) {
-                return 1;
-            } elseif ($e2->dependsOn($e1)) {
-                return -1;
-            } else {
-                return 0;
-            }
-        });
 
-        $this->dependencyOrder = array_map(function (EntityDefinition $entityDefinition) {
-            return $entityDefinition->getEntityName();
-        }, $entityDefinitions);
+        $this->dependencyOrder = $this->getSortEntityDefinitions();
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getSortEntityDefinitions()
+    {
+        $entityDefinitions = array_map(function (EntityDefinition $entityDefinition) {
+            return [
+                'name' => $entityDefinition->getEntityName(),
+                'edges' => $entityDefinition->getDependantEntityTypes()
+            ];
+        }, array_values($this->getEntityDefinitions()));
+
+        $result = [];
+        $S = array_filter(
+            $entityDefinitions,
+            function ($entityDefinition) {
+                return empty($entityDefinition['edges']);
+            }
+        );
+
+        while (!empty($S)) {
+            $n = array_shift($S);
+            $result[] = $n['name'];
+            foreach ($entityDefinitions as &$entityDefinition) {
+                $position = array_search($n['name'], $entityDefinition['edges']);
+                if (false !== $position) {
+                    $edges = &$entityDefinition['edges'];
+                    unset($edges[$position]);
+                    if (empty($edges)) {
+                        $S[] = &$entityDefinition;
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**
