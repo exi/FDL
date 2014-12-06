@@ -9,7 +9,7 @@ class EntityDefinition
     private $metaData;
     /** @var ParameterDefinition[] */
     private $parameterDefinitions = [];
-    private $dependantEntityDefinitions = [];
+    private $dependantEntityTypes = [];
 
     public function __construct($entityName, Array $metaData = [])
     {
@@ -21,8 +21,8 @@ class EntityDefinition
     {
         $this->parameterDefinitions[] = $parameterDefinition;
         if (null !== $parameterDefinition->getEntityType()) {
-            $this->dependantEntityDefinitions[] = $parameterDefinition->getEntityType();
-            $this->dependantEntityDefinitions = array_unique($this->dependantEntityDefinitions);
+            $this->dependantEntityTypes[] = $parameterDefinition->getEntityType();
+            $this->dependantEntityTypes = array_unique($this->dependantEntityTypes);
         }
     }
 
@@ -64,9 +64,11 @@ class EntityDefinition
         return count($this->parameterDefinitions);
     }
 
-    public function dependsOn(EntityDefinition $entityDefinition)
+    /**
+     * @return array
+     */
+    public function getDependantEntityTypes()
     {
-        return false !== array_search($entityDefinition->getEntityName(), $this->dependantEntityDefinitions);
+        return $this->dependantEntityTypes;
     }
 }
- 
