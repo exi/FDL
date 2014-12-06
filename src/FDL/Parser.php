@@ -21,6 +21,7 @@ class Parser
     /** @var EntityDefinition[] */
     private $entityDefinitions = [];
     private $files;
+    private $currentFile;
     private $lineCache = [];
     private $lines;
     private $parserPass;
@@ -43,6 +44,7 @@ class Parser
         }
 
         foreach ($this->files as $file) {
+            $this->currentFile = $file;
             $this->lines = $this->lineCache[$file];
             $this->position = 0;
 
@@ -53,6 +55,7 @@ class Parser
         }
 
         foreach ($this->files as $file) {
+            $this->currentFile = $file;
             $this->lines = $this->lineCache[$file];
             $this->position = 0;
 
@@ -215,7 +218,7 @@ class Parser
             $line = $this->lineValue();
             $matchResult = preg_match('/^([^ ]+)( (.*)$)?/', $line, $matches);
             if (0 === $matchResult or false === $matchResult) {
-                throw new \Exception('Missing entity type');
+                $this->throwException('Missing entity type');
             }
             $entityName = $matches[1];
 
@@ -266,7 +269,7 @@ class Parser
         }
 
         if (!$this->isMultiMarker()) {
-            throw new \Exception('No multi definition found');
+            $this->throwException('No multi definition found');
         }
 
         $this->next();
@@ -422,6 +425,11 @@ class Parser
     public function getEntityByReference($reference)
     {
         return $this->references[$reference];
+    }
+
+    private function throwException($message)
+    {
+        throw new \Exception(sprintf('%s. %s:%d', $message, $this->currentFile, $this->position));
     }
 }
  
