@@ -4,7 +4,7 @@
 class UtilTest extends PHPUnit_Framework_TestCase {
     public function testToReferenceName()
     {
-        $this->assertEquals(md5('testtext'), \FDL\Parser\Util::toReferenceName('test', 'text'));
+        $this->assertEquals('test->text', \FDL\Parser\Util::toReferenceName('test', 'text'));
     }
 
     /**

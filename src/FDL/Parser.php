@@ -74,7 +74,7 @@ class Parser
      */
     private function getSortEntityDefinitions()
     {
-        $entityDefinitions = array_map(function (EntityDefinition $entityDefinition) {
+        $nodes = array_map(function (EntityDefinition $entityDefinition) {
             return [
                 'name' => $entityDefinition->getEntityName(),
                 'edges' => $entityDefinition->getDependantEntityTypes()
@@ -83,7 +83,7 @@ class Parser
 
         $result = [];
         $S = array_filter(
-            $entityDefinitions,
+            $nodes,
             function ($entityDefinition) {
                 return empty($entityDefinition['edges']);
             }
@@ -92,16 +92,25 @@ class Parser
         while (!empty($S)) {
             $n = array_shift($S);
             $result[] = $n['name'];
-            foreach ($entityDefinitions as &$entityDefinition) {
-                $position = array_search($n['name'], $entityDefinition['edges']);
+            foreach ($nodes as &$node) {
+                $position = array_search($n['name'], $node['edges']);
                 if (false !== $position) {
-                    $edges = &$entityDefinition['edges'];
+                    $edges = &$node['edges'];
                     unset($edges[$position]);
                     if (empty($edges)) {
-                        $S[] = &$entityDefinition;
+                        $S[] = &$node;
                     }
                 }
             }
+        }
+
+        $remainingEdges = [];
+        foreach ($nodes as $node) {
+            $remainingEdges = array_merge($remainingEdges, $node['edges']);
+        }
+
+        if (!empty($remainingEdges)) {
+            throw new \Exception('Fixtures have cyclic dependency');
         }
 
         return $result;
@@ -390,9 +399,8 @@ class Parser
 
     private function parseEntityReference(ParameterDefinition $parameterDefinition)
     {
-        return new ReferenceParameter(
-            Util::toReferenceName($parameterDefinition->getEntityType(), $this->lineValue())
-        );
+        $referenceName = Util::toReferenceName($parameterDefinition->getEntityType(), $this->lineValue());
+        return new ReferenceParameter($referenceName);
     }
 
     private function parseMainBlock()
@@ -459,4 +467,4 @@ class Parser
         throw new \Exception(sprintf('%s. %s:%d', $message, $this->currentFile, $this->position));
     }
 }
- 
+
