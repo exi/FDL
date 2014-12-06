@@ -15,7 +15,7 @@ class Util
             throw new \InvalidArgumentException('reference must be a non zero length string');
         }
 
-        return md5($entityName . $reference);
+        return $entityName . '->' . $reference;
     }
 }
  
